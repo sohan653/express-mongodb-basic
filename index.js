@@ -21,11 +21,30 @@ const uri = "mongodb+srv://fishuser1:qsWHboWDinuJV6Qo@cluster0.hrgbo.mongodb.net
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 const run=async ()=>{
     try{
-        await client.connect()
+        await client.connect(err => {
+            console.log('mongodb Conneected')
+        })
+        // get user from server
         const fishCollection = client.db("fishExpress").collection("fish");
-        const singleFish={name:"ruikatla" , pukur:'dabricampopsui'}
-        const result=await fishCollection.insertOne(singleFish)
-        console.log(result.insertedId)
+        app.get("/fish",async(req,res)=>{
+            const kuery={}
+            const cursor=fishCollection.find(kuery)
+            const fishUser=await cursor.toArray();
+            res.send(fishUser)
+        })
+
+
+        // post data send in server
+        app.post('/fish', async (req,res)=>{
+            const user=req.body
+          const fishSend=await fishCollection.insertOne(user)
+        console.log("success")
+        res.send(fishSend)
+         
+        })
+       
+      
+     
     }
     finally{
         await client.close();
@@ -40,7 +59,7 @@ run().catch(console.log);
 app.get("/",(req,res)=>{
    res.send('hello world sohan')
 })
-app.get("/fish",(req,res)=>{
+app.get("/fisher",(req,res)=>{
     const nm=req.query.name
     if(nm){
         const matched=fish.filter(x=> x.name.toLowerCase().includes(nm.toLowerCase()))
@@ -48,16 +67,8 @@ app.get("/fish",(req,res)=>{
     }else{
         res.send(fish)
     }
-   console.log(nm)
+  
 })
 
-app.post("/fish",(req,res)=>{
-   const fis=req.body.users;
-   fis.id=fish.length+1;
-   fish.push(fis)
-//    eta ajke save hobena
-      
-    res.send(fis)
-   
-})
+
 app.listen(port)
