@@ -17,6 +17,7 @@ const fish=[
 // user : fishuser1    password: qsWHboWDinuJV6Qo
 
 const { MongoClient, ServerApiVersion } = require('mongodb');
+const ObjectId=require('mongodb').ObjectId;
 const uri = "mongodb+srv://fishuser1:qsWHboWDinuJV6Qo@cluster0.hrgbo.mongodb.net/myFirstDatabase?retryWrites=true&w=majority";
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 const run=async ()=>{
@@ -26,13 +27,21 @@ const run=async ()=>{
         })
         // get user from server
         const fishCollection = client.db("fishExpress").collection("fish");
+
+
         app.get("/fish",async(req,res)=>{
             const kuery={}
             const cursor=fishCollection.find(kuery)
             const fishUser=await cursor.toArray();
             res.send(fishUser)
         })
-
+        // get a specific data
+        app.get('/fish/:id',async(req,res)=>{
+            const id=req.params.id;
+            const kuery={_id: ObjectId(id)};
+            const findOne= await fishCollection.findOne(kuery);
+            res.send(findOne)
+        })
 
         // post data send in server
         app.post('/fish', async (req,res)=>{
@@ -41,6 +50,31 @@ const run=async ()=>{
         console.log("success")
         res.send(fishSend)
          
+        })
+        // update user
+        app.put('/fish/:id',async(req,res)=>{
+            const id=req.params.id;
+            const updateUser=req.body;
+            const filter={_id: ObjectId(id)};
+            const options = { upsert: true };
+            const updateDoc={
+                $set:{
+                    name:updateUser.name,
+                    email:updateUser.email
+                }
+            }
+            const result=await fishCollection.updateOne(filter,updateDoc,options)
+            res.send(result)
+        })
+        // delete a data by id
+
+        app.delete("/fish/:id" ,async(req,res)=>{
+            const uid=req.params.id;
+           
+            const query={_id: ObjectId(uid)}
+            const dlresult=await fishCollection.deleteOne(query);
+            res.send(dlresult)
+            console.log(uid)
         })
        
       
