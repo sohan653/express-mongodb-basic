@@ -35,6 +35,13 @@ const run=async ()=>{
             const fishUser=await cursor.toArray();
             res.send(fishUser)
         })
+//         get single data
+          app.get('/services/:id',async(req,res)=>{
+        const id =req.params.id;
+        const query={_id :ObjectId(id)};
+        const single=await doctorCollection.findOne(query);
+        res.send(single)
+    })
         // get a specific data
         app.get('/fish/:id',async(req,res)=>{
             const id=req.params.id;
